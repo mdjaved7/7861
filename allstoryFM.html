@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#000000" />
+  <title>All Story FF</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #000000;
+      color: #ffffff;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    ::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+
+    .active-tab {
+      position: relative;
+    }
+    .active-tab::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 3px;
+      border-radius: 2px;
+      background: #3b82f6;
+    }
+
+    .pill-active {
+      background: #3b82f6;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .glass-effect {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .neon-glow {
+      text-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+    }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.15); }
+      50% { box-shadow: 0 0 35px rgba(59, 130, 246, 0.35); }
+    }
+
+    .tab-content {
+      animation: fadeSlideUp 0.35s ease-out;
+    }
+
+    .hero-card {
+      animation: fadeIn 0.5s ease-out, pulseGlow 3s ease-in-out infinite;
+    }
+
+    .toggle-checkbox:checked + .toggle-label {
+      background: #3b82f6;
+    }
+    .toggle-checkbox:checked + .toggle-label .toggle-dot {
+      transform: translateX(100%);
+    }
+
+    .rank-number {
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .bottom-nav-item.active .nav-icon {
+      color: #3b82f6;
+    }
+
+    .star-rating {
+      color: #f59e0b;
+    }
+
+    .badge-new {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+  </style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+  const { useState, useEffect, useRef } = React;
+
+  // ============ DATA ============
+  const featuredStory = {
+    id: 'f1',
+    title: 'Bhootiya Bangla',
+    author: 'Mayank Sinha',
+    type: 'Audio Story',
+    rating: 5.0,
+    totalListens: '2.4M',
+    episodes: 48,
+    tags: ['Featured', 'Horror'],
+    image: 'https://placehold.co/400x250/1a1a2e/3b82f6?text=Bhootiya+Bangla&font=raleway',
+    gradient: 'from-[#1a1a2e] via-[#16213e] to-[#0f3460]'
+  };
+
+  const recentlyListened = [
+    { id: 'r1', title: 'Prem Kahani', author: 'Riya Sharma', progress: 65, image: 'https://placehold.co/200x280/1e1e2e/dc2626?text=Prem+Kahani&font=raleway' },
+    { id: 'r2', title: 'Mahabharat', author: 'Amar Vyas', progress: 30, image: 'https://placehold.co/200x280/1e1e2e/8b5cf6?text=Mahabharat&font=raleway' },
+    { id: 'r3', title: 'Terror Night', author: 'Vikram Joshi', progress: 80, image: 'https://placehold.co/200x280/1e1e2e/059669?text=Terror+Night&font=raleway' },
+    { id: 'r4', title: 'Ishq Moments', author: 'Neha Kapoor', progress: 45, image: 'https://placehold.co/200x280/1e1e2e/dc2626?text=Ishq+Moments&font=raleway' },
+    { id: 'r5', title: 'Rigveda', author: 'Dr. Sharma', progress: 15, image: 'https://placehold.co/200x280/1e1e2e/cb5600?text=Rigveda&font=raleway' },
+  ];
+
+  const newAudioStories = [
+    { id: 'n1', title: 'Ishq Atrangi', author: 'Priya Mehta', rating: 5.0, episodes: 12, listens: '1.8M', image: 'https://placehold.co/240x320/1e1e2e/dc2626?text=Ishq+Atrangi&font=raleway', isNew: true },
+    { id: 'n2', title: 'Chandrakanta', author: 'Devaki Nandan', rating: 5.0, episodes: 24, listens: '5.2M', image: 'https://placehold.co/240x320/1e1e2e/7c3aed?text=Chandrakanta&font=raleway', isNew: true },
+    { id: 'n3', title: 'bhoot FM', author: 'Karan Singh', rating: 4.8, episodes: 18, listens: '3.1M', image: 'https://placehold.co/240x320/1e1e2e/059669?text=bhoot+FM&font=raleway', isNew: true },
+    { id: 'n4', title: 'Pyaar Ka Punchnama', author: 'Ananya Das', rating: 4.9, episodes: 8, listens: '920K', image: 'https://placehold.co/240x320/1e1e2e/dc2626?text=Pyaar+Ka&font=raleway', isNew: false },
+    { id: 'n5', title: 'Dhundh', author: 'Rohit Malhotra', rating: 5.0, episodes: 30, listens: '6.7M', image: 'https://placehold.co/240x320/1e1e2e/1e40af?text=Dhundh&font=raleway', isNew: true },
+  ];
+
+  const newEpisodes = [
+    { id: 'e1', title: 'Aakhri Saans', author: 'Suman Joshi', rating: 4.9, episodes: 6, listens: '450K', image: 'https://placehold.co/240x320/1e1e2e/b91c1c?text=Aakhri+Saans&font=raleway', isNew: true },
+    { id: 'e2', title: 'Maut Ka Khel', author: 'Ravi Shastri', rating: 5.0, episodes: 16, listens: '2.1M', image: 'https://placehold.co/240x320/1e1e2e/1e3a5f?text=Maut+Ka+Khel&font=raleway', isNew: true },
+    { id: 'e3', title: 'Dil Ki Baatein', author: 'Zara Khan', rating: 4.7, episodes: 10, listens: '780K', image: 'https://placehold.co/240x320/1e1e2e/dc2626?text=Dil+Ki+Baatein&font=raleway', isNew: false },
+    { id: 'e4', title: 'Sannata', author: 'Arjun Verma', rating: 5.0, episodes: 22, listens: '4.3M', image: 'https://placehold.co/240x320/1e1e2e/1e3a8a?text=Sannata&font=raleway', isNew: true },
+  ];
+
+  const rankList = [
+    { rank: 1, title: 'Ishq Atrangi', author: 'Priya Mehta', rating: 5.0, listens: '1.8M', episodes: 12, image: 'https://placehold.co/80x80/1e1e2e/dc2626?text=IA&font=raleway' },
+    { rank: 2, title: 'Rigveda', author: 'Dr. Sharma', rating: 4.9, listens: '5.2M', episodes: 48, image: 'https://placehold.co/80x80/1e1e2e/cb5600?text=RV&font=raleway' },
+    { rank: 3, title: 'Chandrakanta', author: 'Devaki Nandan', rating: 5.0, listens: '5.2M', episodes: 24, image: 'https://placehold.co/80x80/1e1e2e/7c3aed?text=CK&font=raleway' },
+    { rank: 4, title: 'Dhundh', author: 'Rohit Malhotra', rating: 5.0, listens: '6.7M', episodes: 30, image: 'https://placehold.co/80x80/1e1e2e/1e40af?text=DH&font=raleway' },
+    { rank: 5, title: 'Bhootiya Bangla', author: 'Mayank Sinha', rating: 5.0, listens: '2.4M', episodes: 48, image: 'https://placehold.co/80x80/1a1a2e/3b82f6?text=BB&font=raleway' },
+    { rank: 6, title: 'Maut Ka Khel', author: 'Ravi Shastri', rating: 5.0, listens: '2.1M', episodes: 16, image: 'https://placehold.co/80x80/1e1e2e/1e3a5f?text=MK&font=raleway' },
+    { rank: 7, title: 'Pyaar Ka Punchnama', author: 'Ananya Das', rating: 4.9, listens: '920K', episodes: 8, image: 'https://placehold.co/80x80/1e1e2e/b91c1c?text=PK&font=raleway' },
+    { rank: 8, title: 'Prem Kahani', author: 'Riya Sharma', rating: 5.0, listens: '3.4M', episodes: 20, image: 'https://placehold.co/80x80/1e1e2e/dc2626?text=PK&font=raleway' },
+  ];
+
+  const genres = ['✨ All', 'General', 'Romance', 'Fantasy', 'Horror'];
+
+  // ============ SVG ICONS ============
+  const Icons = {
+    Search: ({ className }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+      </svg>
+    ),
+    Home: ({ className }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+      </svg>
+    ),
+    Library: ({ className }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" />
+      </svg>
+    ),
+    Profile: ({ className }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+      </svg>
+    ),
+    Star: ({ className }) => (
+      <svg className={className} viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clipRule="evenodd" />
+      </svg>
+    ),
+    Headphones: ({ className }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 15.75v-5.25A8.25 8.25 0 0012 2.25v0a8.25 8.25 0 00-8.25 8.25v5.25m16.5 0v1.5a3 3 0 01-3 3h-1.5a1.5 1.5 0 01-1.5-1.5v-3a1.5 1.5 0 011.5-1.5h4.5zm-16.5 0v1.5a3 3 0 003 3h1.5a1.5 1.5 0 001.5-1.5v-3a1.5 1.5 0 00-1.5-1.5H3.75z" />
+      </svg>
+    ),
+    Play: ({ className }) => (
+      <svg className={className} viewBox="0 0 20 20" fill="currentColor">
+        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+      </svg>
+    ),
+    ChevronRight: ({ className }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+      </svg>
+    ),
+    Sun: ({ className }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+      </svg>
+    ),
+    Moon: ({ className }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+      </svg>
+    ),
+    Globe: ({ className }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+      </svg>
+    ),
+    BookOpen: ({ className }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+      </svg>
+    ),
+    Logout: ({ className }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+      </svg>
+    ),
+    Pencil: ({ className }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+      </svg>
+    ),
+    Continue: ({ className }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M8 5v14l11-7z" />
+      </svg>
+    ),
+    HeadphoneIcon: ({ className }) => (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M9 18V5l12-2v13" />
+        <circle cx="6" cy="18" r="3" />
+        <circle cx="18" cy="16" r="3" />
+      </svg>
+    ),
+    Listens: ({ className }) => (
+      <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+      </svg>
+    ),
+  };
+
+  // ============ COMPONENTS ============
+
+  // -- Header --
+  function TopHeader({ searchQuery, setSearchQuery }) {
+    return (
+      <header className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <div className="flex items-center gap-3">
+            {/* Logo + Brand */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <Icons.HeadphoneIcon className="w-5 h-5 text-white" />
+              </div>
+              <div className="hidden xs:flex flex-col">
+                <h1 className="text-lg font-extrabold tracking-tight leading-none text-white neon-glow">
+                  All Story <span className="text-blue-500">FF</span>
+                </h1>
+                <span className="text-[9px] text-gray-500 tracking-[0.2em] uppercase font-medium">Stream</span>
+              </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="flex-1 relative">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <Icons.Search className="w-4 h-4 text-gray-500" />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search novels, authors..."
+                className="w-full bg-[#1a1a1a] text-white text-sm rounded-xl pl-10 pr-4 py-2.5 border border-white/5 focus:border-blue-500/50 focus:outline-none transition-all placeholder-gray-600"
+              />
+            </div>
+
+            {/* Action Icons */}
+            <div className="flex items-center gap-1.5">
+              <button className="p-2 rounded-xl hover:bg-white/5 transition-colors text-gray-400 hover:text-white">
+                <Icons.Sun className="w-5 h-5" />
+              </button>
+              <button className="p-2 rounded-xl hover:bg-white/5 transition-colors text-gray-400 hover:text-white">
+                <Icons.Globe className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  // -- Bottom Nav --
+  function BottomNav({ activeTab, setActiveTab }) {
+    const tabs = [
+      { id: 'home', label: 'Home', labelHi: 'होम', icon: Icons.Home },
+      { id: 'library', label: 'Library', labelHi: 'लाइब्रेरी', icon: Icons.Library },
+      { id: 'profile', label: 'Profile', labelHi: 'प्रोफ़ाइल', icon: Icons.Profile },
+    ];
+
+    return (
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-white/5 safe-area-bottom">
+        <div className="max-w-2xl mx-auto flex items-center justify-around px-2">
+          {tabs.map(tab => {
+            const isActive = activeTab === tab.id;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex flex-col items-center gap-0.5 py-2.5 px-4 transition-all relative min-w-[72px] ${
+                  isActive ? 'text-blue-500' : 'text-gray-500'
+                }`}
+              >
+                <Icon className={`w-6 h-6 transition-all ${isActive ? 'scale-110' : ''}`} />
+                <span className={`text-[10px] font-semibold tracking-tight ${isActive ? 'text-blue-500' : 'text-gray-500'}`}>
+                  {tab.labelHi}
+                </span>
+                {isActive && (
+                  <span className="absolute -top-[1px] left-1/2 -translate-x-1/2 w-8 h-[3px] bg-blue-500 rounded-full shadow-lg shadow-blue-500/50" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+    );
+  }
+
+  // -- Genre Pills --
+  function GenrePills({ activeGenre, setActiveGenre, contentType, setContentType }) {
+    return (
+      <div className="flex flex-col gap-3 mb-5">
+        {/* Content Type Switcher */}
+        <div className="flex gap-1.5 bg-[#121212] rounded-xl p-1 w-fit">
+          <button
+            onClick={() => setContentType('novels')}
+            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              contentType === 'novels'
+                ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Novels
+          </button>
+          <button
+            onClick={() => setContentType('audio')}
+            className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              contentType === 'audio'
+                ? 'bg-blue-500 text-white shadow-md shadow-blue-500/30'
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Audio Stories
+          </button>
+        </div>
+
+        {/* Genre Tags */}
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
+          {genres.map(g => (
+            <button
+              key={g}
+              onClick={() => setActiveGenre(g)}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                activeGenre === g
+                  ? 'bg-blue-500 text-white border-blue-500 shadow-md shadow-blue-500/25'
+                  : 'bg-[#121212] text-gray-400 border-white/5 hover:border-white/10 hover:text-white'
+              }`}
+            >
+              {g}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // -- Star Rating --
+  function StarRating({ rating, size = 'small' }) {
+    const starSize = size === 'small' ? 'w-3 h-3' : 'w-3.5 h-3.5';
+    return (
+      <div className="flex items-center gap-1">
+        <Icons.Star className={`${starSize} text-amber-400`} />
+        <span className="text-xs font-semibold text-amber-400">{rating.toFixed(1)}</span>
+      </div>
+    );
+  }
+
+  // -- Featured Hero --
+  function HeroBanner({ story }) {
+    return (
+      <div className="relative mb-6 rounded-2xl overflow-hidden hero-card">
+        <div className={`absolute inset-0 bg-gradient-to-r ${story.gradient} opacity-60`} />
+        <img
+          src={story.image}
+          alt={story.title}
+          className="w-full h-[190px] sm:h-[220px] object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-5">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 text-[10px] font-semibold border border-blue-500/30">
+              Featured
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[10px] font-semibold border border-red-500/30">
+              Horror
+            </span>
+          </div>
+          <h2 className="text-xl font-extrabold text-white tracking-tight mb-0.5">{story.title}</h2>
+          <p className="text-xs text-gray-400 mb-1">by {story.author}</p>
+          <div className="flex items-center gap-3 mb-3">
+            <StarRating rating={story.rating} />
+            <span className="text-xs text-gray-500">{story.totalListens} listens</span>
+            <span className="text-xs text-gray-500">{story.episodes} EP</span>
+          </div>
+          <button className="flex items-center gap-2 px-6 py-2.5 bg-white text-black font-bold rounded-xl text-sm hover:bg-gray-100 transition-all shadow-xl shadow-white/10">
+            <Icons.Headphones className="w-4 h-4" />
+            Listen Now
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // -- Horizontal Scroll Section --
+  function HorizontalScrollSection({ title, items, type = 'vertical' }) {
+    return (
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-bold text-white">{title}</h3>
+          <button className="text-blue-400 text-xs font-medium hover:text-blue-300 transition-colors">See All</button>
+        </div>
+        <div className="flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-1">
+          {items.map(item => (
+            <div key={item.id} className="flex-shrink-0 relative group cursor-pointer">
+              {/* Artwork */}
+              <div className="relative overflow-hidden rounded-xl" style={{ width: type === 'vertical' ? 130 : 150 }}>
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className={`object-cover ${
+                    type === 'vertical' ? 'w-[130px] h-[180px]' : 'w-[150px] h-[110px]'
+                  } rounded-xl`}
+                />
+                {/* Progress bar for recently listened */}
+                {item.progress !== undefined && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+                    <div
+                      className="h-full bg-blue-500 rounded-r-full"
+                      style={{ width: `${item.progress}%` }}
+                    />
+                  </div>
+                )}
+                {/* Continue overlay */}
+                {item.progress !== undefined && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
+                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/40">
+                      <Icons.Continue className="w-5 h-5 text-white ml-0.5" />
+                    </div>
+                  </div>
+                )}
+                {/* New badge */}
+                {item.isNew && (
+                  <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md bg-blue-500 text-white text-[8px] font-bold tracking-wide shadow-lg">
+                    New EP
+                  </span>
+                )}
+              </div>
+              {/* Info */}
+              <div className="mt-2 max-w-[130px]">
+                <p className="text-[13px] font-semibold text-white truncate">{item.title}</p>
+                <p className="text-[10px] text-gray-500 truncate">{item.author}</p>
+                {item.rating && <StarRating rating={item.rating} />}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // -- Rank List Item --
+  function RankListItem({ item, index }) {
+    return (
+      <div className="flex items-center gap-3 py-3 border-b border-white/5 last:border-0 cursor-pointer hover:bg-white/[0.02] transition-colors rounded-lg px-2 -mx-2">
+        <span className="text-2xl font-extrabold w-8 text-center rank-number">{String(item.rank).padStart(2, '0')}</span>
+        <img src={item.image} alt={item.title} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-white truncate">{item.title}</p>
+          <p className="text-[11px] text-gray-500 truncate">{item.author}</p>
+          <div className="flex items-center gap-3 mt-0.5">
+            <StarRating rating={item.rating} />
+            <span className="flex items-center gap-1 text-[10px] text-gray-500">
+              <Icons.Listens className="w-3 h-3" />
+              {item.listens}
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-col items-end gap-0.5">
+          <span className="text-[10px] text-gray-600">{item.episodes} EP</span>
+          <Icons.ChevronRight className="w-4 h-4 text-gray-600" />
+        </div>
+      </div>
+    );
+  }
+
+  // -- Home Tab --
+  function HomeTab({ activeGenre, setActiveGenre, contentType, setContentType }) {
+    return (
+      <div className="tab-content">
+        <GenrePills
+          activeGenre={activeGenre}
+          setActiveGenre={setActiveGenre}
+          contentType={contentType}
+          setContentType={setContentType}
+        />
+        <HeroBanner story={featuredStory} />
+        <HorizontalScrollSection title="Recently Listened" items={recentlyListened} type="horizontal" />
+        <HorizontalScrollSection title="New Audio Stories" items={newAudioStories} type="vertical" />
+        <HorizontalScrollSection title="New Episodes" items={newEpisodes} type="vertical" />
+        {/* Rankings section within home */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-bold text-white">Top Charts</h3>
+            <button className="text-blue-400 text-xs font-medium">See All</button>
+          </div>
+          <div className="bg-[#121212] rounded-2xl p-3 border border-white/5">
+            {rankList.slice(0, 5).map((item, i) => (
+              <RankListItem key={item.rank} item={item} index={i} />
+            ))}
+          </div>
+        </div>
+        <div className="h-8" />
+      </div>
+    );
+  }
+
+  // -- Library / Ranking Tab --
+  function LibraryTab() {
+    return (
+      <div className="tab-content">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl font-bold text-white">Top Charts</h2>
+          <span className="text-xs text-gray-500 bg-[#121212] px-3 py-1 rounded-full">This Week</span>
+        </div>
+        <div className="bg-[#121212] rounded-2xl p-4 border border-white/5">
+          {rankList.map((item, i) => (
+            <RankListItem key={item.rank} item={item} index={i} />
+          ))}
+        </div>
+        <div className="h-8" />
+      </div>
+    );
+  }
+
+  // -- Profile Tab --
+  function ProfileTab() {
+    const [writerMode, setWriterMode] = useState(false);
+    const [darkMode, setDarkMode] = useState(true);
+
+    return (
+      <div className="tab-content">
+        {/* User Header */}
+        <div className="flex items-center gap-4 mb-8 mt-2">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white shadow-xl shadow-blue-500/20">
+              M
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-blue-500 border-2 border-black flex items-center justify-center cursor-pointer hover:scale-105 transition-transform">
+              <Icons.Pencil className="w-3.5 h-3.5 text-white" />
+            </div>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">MJAVED</h2>
+            <p className="text-xs text-gray-500">Member since 2025</p>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="flex gap-4 mb-6">
+          {[
+            { label: 'Library', value: '24' },
+            { label: 'Listened', value: '142' },
+            { label: 'Downloads', value: '38' },
+          ].map(s => (
+            <div key={s.label} className="flex-1 bg-[#121212] rounded-xl border border-white/5 p-3 text-center">
+              <p className="text-lg font-bold text-white">{s.value}</p>
+              <p className="text-[10px] text-gray-500">{s.label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Settings */}
+        <div className="bg-[#121212] rounded-2xl border border-white/5 overflow-hidden mb-4">
+          {/* Writer Mode */}
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/5">
+            <div>
+              <p className="text-sm font-medium text-white">Writer Mode (लेखक मोड)</p>
+              <p className="text-[10px] text-gray-500">Create & manage your stories</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={writerMode}
+                onChange={() => setWriterMode(!writerMode)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-[#2a2a2a] rounded-full peer peer-checked:bg-blue-500 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
+            </label>
+          </div>
+
+          {/* Dark Mode */}
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/5">
+            <div>
+              <p className="text-sm font-medium text-white">Dark Mode (डार्क मोड)</p>
+              <p className="text-[10px] text-gray-500">Always on for premium experience</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={darkMode}
+                onChange={() => setDarkMode(!darkMode)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-blue-500 rounded-full peer-checked:bg-blue-500 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
+            </label>
+          </div>
+
+          {/* Language */}
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/5 cursor-pointer hover:bg-white/[0.02] transition-colors">
+            <div>
+              <p className="text-sm font-medium text-white">Language (भाषा)</p>
+              <p className="text-[10px] text-gray-500">English • हिंदी</p>
+            </div>
+            <Icons.ChevronRight className="w-4 h-4 text-gray-600" />
+          </div>
+
+          {/* Help & Support */}
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/5 cursor-pointer hover:bg-white/[0.02] transition-colors">
+            <p className="text-sm font-medium text-white">Help & Support (सहायता)</p>
+            <Icons.ChevronRight className="w-4 h-4 text-gray-600" />
+          </div>
+
+          {/* Privacy */}
+          <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/5 cursor-pointer hover:bg-white/[0.02] transition-colors">
+            <p className="text-sm font-medium text-white">Privacy Policy & Terms</p>
+            <Icons.ChevronRight className="w-4 h-4 text-gray-600" />
+          </div>
+
+          {/* Logout */}
+          <div className="px-4 py-3.5">
+            <button className="flex items-center gap-2 text-red-400 text-sm font-medium hover:text-red-300 transition-colors">
+              <Icons.Logout className="w-4 h-4" />
+              Logout (लॉग आउट)
+            </button>
+          </div>
+        </div>
+
+        {/* Version */}
+        <p className="text-center text-[10px] text-gray-600 mb-20">All Story FF v2.1.0</p>
+      </div>
+    );
+  }
+
+  // ============ APP ============
+  function App() {
+    const [activeTab, setActiveTab] = useState('home');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeGenre, setActiveGenre] = useState('✨ All');
+    const [contentType, setContentType] = useState('audio');
+
+    // Track if the search is active (for styling)
+    const [searchFocused, setSearchFocused] = useState(false);
+
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <TopHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+
+        {/* Main Content Area */}
+        <main className="pt-[68px] pb-[68px] px-4 max-w-2xl mx-auto">
+          {activeTab === 'home' && (
+            <HomeTab
+              activeGenre={activeGenre}
+              setActiveGenre={setActiveGenre}
+              contentType={contentType}
+              setContentType={setContentType}
+            />
+          )}
+          {activeTab === 'library' && <LibraryTab />}
+          {activeTab === 'profile' && <ProfileTab />}
+        </main>
+
+        <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+      </div>
+    );
+  }
+
+  // ============ RENDER ============
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(<App />);
+</script>
+
+</body>
+</html>
